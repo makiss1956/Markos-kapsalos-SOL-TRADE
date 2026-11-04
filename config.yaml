@@ -1,0 +1,39 @@
+# ==========================================================
+# sol_trade — Κύριες ρυθμίσεις στρατηγικής
+# Αλλάξτε ελεύθερα τις τιμές και δοκιμάστε με backtest!
+# ==========================================================
+
+# Το token που διαπραγματεύεται το bot
+token:
+  mint: "So11111111111111111111111111111111111111112"   # SOL
+  symbol: "SOL"
+  decimals: 9
+
+# Το νόμισμα αντιστάθμισης (το πουλάμε/αγοράζουμε το token με αυτό)
+quote:
+  mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"  # USDC
+  symbol: "USDC"
+  decimals: 6
+
+trading:
+  poll_interval_sec: 30        # πόσο συχνά τραβάει τιμή το bot
+  history_size: 300            # πόσες τιμές κρατάμε στη μνήμη
+  fee_pct: 0.10                # προσομοίωση fee συναλλαγής (%)
+  slippage_pct: 0.05           # προσομοίωση slippage (%)
+
+strategy:
+  ema_fast: 12                 # γρήγορη EMA
+  ema_slow: 26                 # αργή EMA
+  rsi_period: 14               # περίοδος RSI
+  rsi_oversold: 30             # κάτω από αυτό = υπερπώληση
+  rsi_overbought: 70           # πάνω από αυτό = υπεραγορά
+
+risk:
+  trade_amount_usd: 50         # ποσό ανά συναλλαγή (USD)
+  max_position_usd: 100        # μέγιστη ανοιχτή θέση (USD)
+  stop_loss_pct: 3.0           # stop-loss: έξοδος αν πέσει η τιμή 3% κάτω από την είσοδο
+  take_profit_pct: 5.0         # take-profit: έξοδος με κέρδος 5%
+  trailing_stop_pct: 2.0       # trailing stop: έξοδος αν πέσει 2% κάτω από την κορυφή
+  max_daily_trades: 10         # μέγιστες συναλλαγές την ημέρα
+
+mode: paper                    # "paper" ή "live" (το --live της γραμμής εντολών υπερισχύει)

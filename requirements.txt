@@ -1,0 +1,11 @@
+requests>=2.31.0
+PyYAML>=6.0
+python-dotenv>=1.0.0
+
+# --- Για LIVE mode μόνο (πραγματικές συναλλαγές) ---
+solders>=0.21.0
+solana>=0.34.0
+base58>=2.1.1
+
+# --- Για tests (προαιρετικό) ---
+pytest>=7.4.0
