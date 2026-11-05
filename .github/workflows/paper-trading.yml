@@ -1,0 +1,62 @@
+# ============================================================
+# sol_trade — Paper trading στο GitHub Actions (ΠΡΟΑΙΡΕΤΙΚΟ)
+#
+# Τι κάνει: κάθε ώρα τρέχει ΕΝΑ βήμα του bot σε paper mode με
+# ΠΡΑΓΜΑΤΙΚΕΣ τιμές Jupiter, αποθηκεύει το state (paper_state.json
+# + price_history.json) και το ξαναχρησιμοποιεί στο επόμενο τρέξιμο.
+#
+# Ενεργοποίηση: GitHub → tab «Actions» → επιλέξτε το workflow
+# «Paper Trading (sol_trade)» → «Enable» / «Run workflow».
+# Απενεργοποίηση: ίδιο μέρος → «Disable workflow».
+#
+# Προαιρετικά Telegram: Settings → Secrets and variables → Actions
+# → New repository secret: TELEGRAM_BOT_TOKEN και TELEGRAM_CHAT_ID.
+# ============================================================
+
+name: Paper Trading (sol_trade)
+
+on:
+  workflow_dispatch:      # χειροκίνητη εκκίνηση από το tab Actions
+  schedule:
+    - cron: '0 * * * *'   # κάθε ώρα (UTC)
+
+permissions:
+  contents: write         # χρειάζεται για να αποθηκεύει το state πίσω στο repo
+
+concurrency:
+  group: paper-trading
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run one paper tick
+        env:
+          SOL_TRADE_MODE: paper
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python run.py trade --once
+
+      - name: Commit paper state
+        run: |
+          git config user.name "sol-trade-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/paper_state.json data/price_history.json
+          if git diff --cached --quiet; then
+            echo "Δεν άλλαξε τίποτα — skip commit"
+          else
+            git commit -m "paper state update [skip ci]"
+            git push
+          fi
