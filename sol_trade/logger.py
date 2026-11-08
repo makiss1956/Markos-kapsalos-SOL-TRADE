@@ -10,6 +10,7 @@ def setup_logger(name: str = "sol_trade", log_dir: Path | None = None, level: in
     if logger.handlers:  # ήδη ρυθμισμένος
         return logger
     logger.setLevel(level)
+    logger.propagate = False  # όχι διπλές γραμμές από τον γονικό logger
 
     fmt = logging.Formatter(
         "%(asctime)s | %(levelname)-7s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S"

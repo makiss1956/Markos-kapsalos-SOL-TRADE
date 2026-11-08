@@ -30,6 +30,37 @@ class TradingBot:
         saved = load_json(self._history_path, {"prices": []})
         self.prices: list[float] = [float(p) for p in saved.get("prices", [])]
         self.prices = self.prices[-cfg.trading.history_size:]
+        self._backfill_history()
+
+    def _backfill_history(self) -> None:
+        """Αν το ιστορικό δεν φτάνει για τους δείκτες, το γεμίζουμε από CoinGecko.
+
+        Η στρατηγική θέλει max(ema_slow, rsi_period+2)+2 τιμές (για EMA26/RSI14
+        = 28). Με ωριαίο tick αυτό σημαίνει μια ολόκληρη μέρα αναμονή — το
+        δωρεάν CoinGecko δίνει τις ωριαίες τιμές των τελευταίων ημερών και το
+        bot γίνεται «ζεστό» από την πρώτη κιόλας εκτέλεση.
+        """
+        s = self.cfg.strategy
+        min_needed = max(s.ema_slow, s.rsi_period + 2) + 2
+        if len(self.prices) >= min_needed:
+            return
+        try:
+            from .backfill import fetch_hourly_prices
+
+            hours = int(getattr(self.cfg.trading, "backfill_hours", 72))
+            coin = str(getattr(self.cfg.trading, "backfill_coin_id", "solana"))
+            filled = fetch_hourly_prices(hours=hours, coin_id=coin, symbol=self.cfg.token.symbol)
+            if not filled:
+                log.warning("Backfill: το CoinGecko δεν επέστρεψε τιμές.")
+                return
+            # βάζουμε τις ωριαίες τιμές ΠΡΙΝ από τις υπάρχουσες (νεότερες στο τέλος)
+            self.prices = filled[:-1] + self.prices
+            self.prices = self.prices[-self.cfg.trading.history_size:]
+            self._persist_prices()
+            log.info("Backfill: +%d ωριαίες τιμές → ιστορικό τώρα %d σημεία (=%s)",
+                     len(filled) - 1, len(self.prices), coin)
+        except Exception as e:  # noqa: BLE001 — το backfill είναι προαιρετικό
+            log.warning("Backfill απέτυχε (συνεχίζουμε κανονικά): %s", e)
 
     def _persist_prices(self) -> None:
         save_json(self._history_path, {"prices": self.prices})

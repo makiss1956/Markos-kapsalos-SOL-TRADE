@@ -16,10 +16,12 @@ quote:
   decimals: 6
 
 trading:
-  poll_interval_sec: 30        # πόσο συχνά τραβάει τιμή το bot
-  history_size: 300            # πόσες τιμές κρατάμε στη μνήμη
+  poll_interval_sec: 30        # πόσο συχνά τραβάει τιμή το bot (για τοπικό τρέξιμο)
+  history_size: 300            # πόσες τιμές κρατάμε στο ιστορικό
   fee_pct: 0.10                # προσομοίωση fee συναλλαγής (%)
   slippage_pct: 0.05           # προσομοίωση slippage (%)
+  backfill_hours: 72           # ΑΥΤΟΜΑΤΟ γέμισμα ιστορικού: ωριαίες τιμές από CoinGecko
+  backfill_coin_id: "solana"   # το id του token στο CoinGecko (SOL = solana)
 
 strategy:
   ema_fast: 12                 # γρήγορη EMA

@@ -42,6 +42,8 @@ class TradingCfg:
     history_size: int = 300
     fee_pct: float = 0.10
     slippage_pct: float = 0.05
+    backfill_hours: int = 72       # αυτόματο γέμισμα ιστορικού από CoinGecko
+    backfill_coin_id: str = "solana"  # id του token στο CoinGecko
 
 
 @dataclass
