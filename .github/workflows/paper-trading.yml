@@ -9,8 +9,8 @@
 # «Paper Trading (sol_trade)» → «Enable» / «Run workflow».
 # Απενεργοποίηση: ίδιο μέρος → «Disable workflow».
 #
-# Προαιρετικά Telegram: Settings → Secrets and variables → Actions
-# → New repository secret: TELEGRAM_BOT_TOKEN και TELEGRAM_CHAT_ID.
+# Προαιρετικά Telegram/Email: Settings → Secrets and variables → Actions
+# → New repository secret.
 # ============================================================
 
 name: Paper Trading (sol_trade)
@@ -47,6 +47,9 @@ jobs:
           SOL_TRADE_MODE: paper
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
         run: python run.py trade --once
 
       - name: Commit paper state
