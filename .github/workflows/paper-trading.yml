@@ -1,35 +1,30 @@
 # ============================================================
-# sol_trade — Paper trading στο GitHub Actions (ΠΡΟΑΙΡΕΤΙΚΟ)
-#
-# Τι κάνει: κάθε ώρα τρέχει ΕΝΑ βήμα του bot σε paper mode με
-# ΠΡΑΓΜΑΤΙΚΕΣ τιμές Jupiter, αποθηκεύει το state (paper_state.json
-# + price_history.json) και το ξαναχρησιμοποιεί στο επόμενο τρέξιμο.
-#
-# Ενεργοποίηση: GitHub → tab «Actions» → επιλέξτε το workflow
-# «Paper Trading (sol_trade)» → «Enable» / «Run workflow».
-# Απενεργοποίηση: ίδιο μέρος → «Disable workflow».
-#
-# Προαιρετικά Telegram/Email: Settings → Secrets and variables → Actions
-# → New repository secret.
+# sol_trade — Paper trading στο GitHub Actions (MULTI-TOKEN)
+# Τρέχει 8 parallel jobs (ένα ανά token) κάθε ώρα.
 # ============================================================
 
-name: Paper Trading (sol_trade)
+name: Paper Trading (sol_trade multi-token)
 
 on:
-  workflow_dispatch:      # χειροκίνητη εκκίνηση από το tab Actions
+  workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'   # κάθε ώρα (UTC)
+    - cron: '0 * * * *'   # κάθε ώρα UTC
 
 permissions:
-  contents: write         # χρειάζεται για να αποθηκεύει το state πίσω στο repo
+  contents: write
 
 concurrency:
-  group: paper-trading
+  group: paper-${{ matrix.token }}
   cancel-in-progress: false
 
 jobs:
   tick:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        token: [SOL, WBTC, PYTH, JTO, JUP, RAY, RENDER, BONK]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,24 +37,26 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run one paper tick
+      - name: Run one paper tick for ${{ matrix.token }}
         env:
           SOL_TRADE_MODE: paper
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-        run: python run.py trade --once
+        run: python run.py trade --once --token ${{ matrix.token }}
 
-      - name: Commit paper state
+      - name: Commit paper state for ${{ matrix.token }}
         run: |
           git config user.name "sol-trade-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/paper_state.json data/price_history.json
+          if [ "${{ matrix.token }}" = "SOL" ]; then
+            git add data/paper_state.json data/price_history.json
+          else
+            git add data/paper_state_${{ matrix.token }}.json \
+                   data/price_history_${{ matrix.token }}.json
+          fi
           if git diff --cached --quiet; then
             echo "Δεν άλλαξε τίποτα — skip commit"
           else
-            git commit -m "paper state update [skip ci]"
+            git commit -m "paper state update ${{ matrix.token }} [skip ci]"
             git push
           fi
