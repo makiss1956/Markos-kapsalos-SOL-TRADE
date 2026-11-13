@@ -1,122 +1,41 @@
-# ==========================================================
-# sol_trade — Κατάλογος token (multi-token)
-# ==========================================================
-# Το bot διαπραγματεύεται ΕΝΑ token τη φορά. Με το --token επιλέγετε
-# ποιο θα χρησιμοποιηθεί, π.χ.:
-#
-#   python run.py trade --once --token BONK
-#   python run.py trade --token WBTC
-#   python run.py status                # σύνοψη όλων
-#   python run.py reset --token BONK
-#
-# Κάθε token έχει δικό του paper state (data/paper_state_<SYMBOL>.json)
-# και δικό του ιστορικό τιμών (data/price_history_<SYMBOL>.json).
-# Το SOL κρατά τα αρχικά ονόματα αρχείων (paper_state.json /
-# price_history.json) για συμβατότητα με το υπάρχον state.
-#
-# Όλα τα mints ελέγχθηκαν:
-#   - τιμή ΜΕСА από το Jupiter Price API v3 (αυτό που χρησιμοποιεί το bot)
-#   - decimals από το Solana blockchain (RPC getAccountInfo)
-#   - coingecko_id για το αυτόματο backfill ιστορικού
-#
-# Προαιρετικό «risk:» → override μεμονωμένων τιμών του risk: στο config.yaml
-# μόνο για αυτό το token (εδώ: το BONK παίρνει μικρότερο μέγεθος θέσης και
-# ευρύτερα stops, επειδή είναι memecoin με μεγάλη μεταβλητότητα).
-# ==========================================================
-
 tokens:
   SOL:
+    symbol: SOL
     mint: "So11111111111111111111111111111111111111112"
-    symbol: "SOL"
     decimals: 9
-    coingecko_id: "solana"
-
-  WBTC:                    # Wrapped BTC (Portal/Wormhole bridge) — η βαθύτερη ρευστότητα BTC στο Solana
+    coingecko_id: solana
+  WBTC:
+    symbol: WBTC
     mint: "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh"
-    symbol: "WBTC"
     decimals: 8
-    coingecko_id: "wrapped-bitcoin"
-
-  PYTH:                    # Pyth Network — μαντείο/οracle
+    coingecko_id: wrapped-bitcoin
+  PYTH:
+    symbol: PYTH
     mint: "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3"
-    symbol: "PYTH"
     decimals: 6
-    coingecko_id: "pyth-network"
-
-  JTO:                     # Jito — liquid staking / MEV
+    coingecko_id: pyth-network
+  JTO:
+    symbol: JTO
     mint: "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL"
-    symbol: "JTO"
     decimals: 9
-    coingecko_id: "jito-governance-token"
-
-  JUP:                     # Jupiter — το DEX που χρησιμοποιεί το bot
+    coingecko_id: jito-governance-token
+  JUP:
+    symbol: JUP
     mint: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
-    symbol: "JUP"
     decimals: 6
-    coingecko_id: "jupiter-exchange-solana"
-
-  RAY:                     # Raydium — top DEX του Solana
+    coingecko_id: jupiter-exchange-solana
+  RAY:
+    symbol: RAY
     mint: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R"
-    symbol: "RAY"
     decimals: 6
-    coingecko_id: "raydium"
-
-  RENDER:                  # Render — GPU/AI δίκτυο
+    coingecko_id: raydium
+  RENDER:
+    symbol: RENDER
     mint: "rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof"
-    symbol: "RENDER"
     decimals: 8
-    coingecko_id: "render-token"
-
-  BONK:                    # Bonk — κορυφαίο memecoin του Solana (μικρότερο μέγεθος + ευρύτερα stops)
+    coingecko_id: render-token
+  BONK:
+    symbol: BONK
     mint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263"
-    symbol: "BONK"
     decimals: 5
-    coingecko_id: "bonk"
-    risk:
-      trade_amount_usd: 25
-      max_position_usd: 50
-      stop_loss_pct: 5.0
-      take_profit_pct: 8.0
-      trailing_stop_pct: 3.0
-      max_daily_trades: 6
-
-# ----------------------------------------------------------
-# ΕΝΑΛΛΑΚΤΙΚΑ — δοκιμασμένα mints, έτοιμα προς ενεργοποίηση:
-# αφαιρέστε το «#» μπροστά από όποιο θέλετε και προσθέστε το
-# στο παραπάνω μπλοκ (ή απλώς uncomment όλο το μπλοκ του).
-# ----------------------------------------------------------
-#  WIF:                    # dogwifhat — 2ο memecoin σε ρευστότητα
-#    mint: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm"
-#    symbol: "WIF"
-#    decimals: 6
-#    coingecko_id: "dogwifcoin"
-#    risk:
-#      trade_amount_usd: 25
-#      max_position_usd: 50
-#      stop_loss_pct: 5.0
-#      take_profit_pct: 8.0
-#      trailing_stop_pct: 3.0
-#
-#  HNT:                    # Helium — προσοχή: μικρότερη ρευστότητα (~$190k)
-#    mint: "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux"
-#    symbol: "HNT"
-#    decimals: 8
-#    coingecko_id: "helium"
-#
-#  ORCA:                   # Orca DEX
-#    mint: "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE"
-#    symbol: "ORCA"
-#    decimals: 6
-#    coingecko_id: "orca"
-#
-#  PUMP:                   # Pump.fun — πολύ νέο token, extreme μεταβλητότητα
-#    mint: "pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn"
-#    symbol: "PUMP"
-#    decimals: 6
-#    coingecko_id: "pump-fun"
-#
-#  FARTCOIN:               # extreme memecoin — μόνο για έμπειρους
-#    mint: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump"
-#    symbol: "FARTCOIN"
-#    decimals: 6
-#    coingecko_id: "fartcoin"
+    coingecko_id: bonk
