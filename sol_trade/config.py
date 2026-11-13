@@ -110,3 +110,40 @@ def load_config(config_path: str | None = None, overrides: dict | None = None) -
     if cfg.trading.poll_interval_sec < 5:
         raise ValueError("Το poll_interval_sec πρέπει να είναι >= 5 δευτερόλεπτα")
     return cfg
+    
+
+# ─── Multi-token support (προσθήκη στο τέλος του sol_trade/config.py) ───
+
+def load_tokens(tokens_path: str | None = None) -> dict:
+    """Φορτώνει tokens.yaml και επιστρέφει dict {SYMBOL: token_dict}.
+
+    Κάθε entry περιέχει: mint, symbol, decimals, coingecko_id,
+    και προαιρετικά risk overrides.
+    """
+    path = Path(tokens_path) if tokens_path else PROJECT_ROOT / "tokens.yaml"
+    if not path.exists():
+        return {}
+    with open(path, "r", encoding="utf-8") as f:
+        raw = yaml.safe_load(f) or {}
+    return raw.get("tokens", {})
+
+
+def token_state_path(symbol: str, data_dir: Path) -> Path:
+    """Επιστρέφει το state path για το symbol.
+
+    SOL     -> paper_state.json          (backward compat με υπάρχον αρχείο)
+    BONK    -> paper_state_BONK.json
+    WBTC    -> paper_state_WBTC.json
+    ...
+    """
+    if symbol.upper() == "SOL":
+        return data_dir / "paper_state.json"
+    return data_dir / f"paper_state_{symbol.upper()}.json"
+
+
+def token_history_path(symbol: str, data_dir: Path) -> Path:
+    """Επιστρέφει το price_history path για το symbol."""
+    if symbol.upper() == "SOL":
+        return data_dir / "price_history.json"
+    return data_dir / f"price_history_{symbol.upper()}.json"
+
