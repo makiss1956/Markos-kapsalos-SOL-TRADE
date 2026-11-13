@@ -57,5 +57,6 @@ jobs:
             echo "Δεν άλλαξε τίποτα — skip commit"
           else
             git commit -m "paper state update ${{ matrix.token }} [skip ci]"
+            git pull --rebase origin main || git pull --rebase || true
             git push
           fi
