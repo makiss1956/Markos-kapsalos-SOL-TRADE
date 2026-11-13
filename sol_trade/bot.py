@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 
-from .config import Config
+from .config import Config, token_history_path
 from .data_feed import PriceFeed
 from .logger import setup_logger
 from .notifier import Notifier
@@ -25,8 +25,8 @@ class TradingBot:
         self.notifier = notifier
         self.live = live_engine
         self.risk = RiskManager(cfg.risk)
-        # Φόρτωση αποθηκευμένου ιστορικού τιμών (επιβιώνει από επανεκκινήσεις)
-        self._history_path = cfg.data_dir / "price_history.json"
+        # Δυναμικό ιστορικό τιμών ανάλογα με το token (π.χ. price_history.json ή price_history_BONK.json)
+        self._history_path = token_history_path(cfg.token.symbol, cfg.data_dir)
         saved = load_json(self._history_path, {"prices": []})
         self.prices: list[float] = [float(p) for p in saved.get("prices", [])]
         self.prices = self.prices[-cfg.trading.history_size:]
@@ -132,7 +132,7 @@ class TradingBot:
     # ---------------------------------------------------- ΕΚΤΕΛΕΣΕΙΣ
     def _open_position(self, signal) -> None:
         if self.cfg.mode == "live" and self.live is not None:
-            # LIVE: το USDC σε USD είναι πρακτικά 1.00 (stablecoin)
+            # LIVE: το USDC σε USD είναι πρακτικά 1.0 (stablecoin)
             quote_price = 1.0
             try:
                 record = self.live.buy(signal, quote_price, self.risk)
