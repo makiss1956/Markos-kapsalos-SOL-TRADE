@@ -110,7 +110,7 @@ def load_config(config_path: str | None = None, overrides: dict | None = None) -
     if cfg.trading.poll_interval_sec < 5:
         raise ValueError("Το poll_interval_sec πρέπει να είναι >= 5 δευτερόλεπτα")
     return cfg
-    
+
 
 # ─── Multi-token support (προσθήκη στο τέλος του sol_trade/config.py) ───
 
@@ -146,4 +146,3 @@ def token_history_path(symbol: str, data_dir: Path) -> Path:
     if symbol.upper() == "SOL":
         return data_dir / "price_history.json"
     return data_dir / f"price_history_{symbol.upper()}.json"
-
