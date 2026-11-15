@@ -37,5 +37,8 @@ risk:
   take_profit_pct: 5.0         # take-profit: έξοδος με κέρδος 5%
   trailing_stop_pct: 2.0       # trailing stop: έξοδος αν πέσει 2% κάτω από την κορυφή
   max_daily_trades: 10         # μέγιστες συναλλαγές την ημέρα
+  max_daily_loss_usd: 30.0
+  max_consecutive_losses: 5
+  max_holding_hours: 24
 
 mode: paper                    # "paper" ή "live" (το --live της γραμμής εντολών υπερισχύει)
