@@ -80,24 +80,26 @@ class LiveEngine:
             what=f"BUY {self.cfg.token.symbol}",
         )
         risk_manager.register_trade()
+
         # Λήψη πραγματικού αποτελέσματος από την συναλλαγή
-receipt = self._get_transaction_receipt(signature)
-out_amount = receipt.get("outAmount", 0)
-decimals = self._get_token_decimals(signal.token)
-actual_size = out_amount / (10 ** decimals)
-actual_entry_price = self.cfg.risk.trade_amount_usd / actual_size if actual_size > 0 else eff_price
+        receipt = self._get_transaction_receipt(signature)
+        out_amount = receipt.get("outAmount", 0)
+        decimals = self._get_token_decimals(signal.token)
+        actual_size = out_amount / (10 ** decimals)
+        actual_entry_price = self.cfg.risk.trade_amount_usd / actual_size if actual_size > 0 else eff_price
 
-return {
-    "entry_price": actual_entry_price,
-    "size_token": actual_size,
-    "signature": signature,
-    "timestamp": datetime.utcnow().isoformat()
-}
-
+        return {
+            "entry_price": actual_entry_price,
+            "size_token": actual_size,
+            "signature": signature,
+            "timestamp": utc_now_iso(),
+        }
 
     def sell(self, position: Position, reason: str, risk_manager: RiskManager) -> dict:
         """Πώληση όλης της θέσης: swap token -> USDC."""
-        amount_raw = self.token_to_raw(position.size_token)
+        # Χρήση πραγματικού υπολοίπου αντί για position.size_token
+        amount = self._get_current_token_balance()
+        amount_raw = self.token_to_raw(amount)
         signature = self._do_swap(
             input_mint=self.cfg.token.mint,
             output_mint=self.cfg.quote.mint,
