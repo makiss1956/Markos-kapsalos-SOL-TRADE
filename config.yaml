@@ -22,6 +22,8 @@ trading:
   slippage_pct: 0.05           # προσομοίωση slippage (%)
   backfill_hours: 72           # ΑΥΤΟΜΑΤΟ γέμισμα ιστορικού: ωριαίες τιμές από CoinGecko
   backfill_coin_id: "solana"   # το id του token στο CoinGecko (SOL = solana)
+  live_slippage_bps: 50
+  priority_fee_microlamports: 5000
 
 strategy:
   ema_fast: 12                 # γρήγορη EMA
