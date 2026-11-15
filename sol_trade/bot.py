@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import time
 
 from .config import Config, token_history_path
@@ -25,8 +26,15 @@ class TradingBot:
         self.notifier = notifier
         self.live = live_engine
         self.risk = RiskManager(cfg.risk)
-        # Δυναμικό ιστορικό τιμών ανάλογα με το token (π.χ. price_history.json ή price_history_BONK.json)
-        self._history_path = token_history_path(cfg.token.symbol, cfg.data_dir)
+
+        # Δυναμικό ιστορικό τιμών ανάλογα με το token (με ασφαλές fallback αν επιστραφεί None)
+        hist_path = token_history_path(cfg.token.symbol, cfg.data_dir)
+        if hist_path is None:
+            sym = cfg.token.symbol.upper()
+            fname = "price_history.json" if sym == "SOL" else f"price_history_{sym}.json"
+            hist_path = Path(cfg.data_dir) / fname
+        self._history_path = Path(hist_path)
+
         saved = load_json(self._history_path, {"prices": []})
         self.prices: list[float] = [float(p) for p in saved.get("prices", [])]
         self.prices = self.prices[-cfg.trading.history_size:]
@@ -140,7 +148,7 @@ class TradingBot:
                 self.paper.position = Position(
                     entry_price=record["entry_price"],
                     size_token=record["size_token"],
-                    size_usd=record["size_usd"],
+                    size_usd=record.get("size_usd", self.cfg.risk.trade_amount_usd),
                     opened_at=utc_now_iso(),
                 )
                 self.paper.persist()
