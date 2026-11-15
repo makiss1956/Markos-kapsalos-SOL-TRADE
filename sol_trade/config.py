@@ -1,7 +1,7 @@
 """Φόρτωση ρυθμίσεων από config.yaml + μεταβλητές περιβάλλοντος (.env)."""
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 
 import yaml
@@ -42,7 +42,8 @@ class TradingCfg:
     history_size: int = 300
     fee_pct: float = 0.10
     slippage_pct: float = 0.05
-    backfill_hours: int = 72       # αυτόματο γέμισμα ιστορικού από CoinGecko
+    live_slippage_bps: int = 50
+    backfill_hours: int = 72        # αυτόματο γέμισμα ιστορικού από CoinGecko
     backfill_coin_id: str = "solana"  # id του token στο CoinGecko
 
 
@@ -60,6 +61,12 @@ class Config:
     telegram_chat_id: str = ""
     private_key: str = ""
     data_dir: Path = field(default_factory=lambda: PROJECT_ROOT / "data")
+
+
+def _filter_fields(cls, data: dict) -> dict:
+    """Κρατάει μόνο τα πεδία που αναγνωρίζει το dataclass."""
+    valid = {f.name for f in fields(cls)}
+    return {k: v for k, v in (data or {}).items() if k in valid}
 
 
 def load_config(config_path: str | None = None, overrides: dict | None = None) -> Config:
@@ -89,11 +96,11 @@ def load_config(config_path: str | None = None, overrides: dict | None = None) -
         )
 
     cfg = Config(
-        token=TokenCfg(**raw["token"]),
-        quote=TokenCfg(**raw["quote"]),
-        trading=TradingCfg(**raw.get("trading", {})),
-        strategy=StrategyCfg(**raw.get("strategy", {})),
-        risk=RiskCfg(**raw.get("risk", {})),
+        token=TokenCfg(**_filter_fields(TokenCfg, raw["token"])),
+        quote=TokenCfg(**_filter_fields(TokenCfg, raw["quote"])),
+        trading=TradingCfg(**_filter_fields(TradingCfg, raw.get("trading", {}))),
+        strategy=StrategyCfg(**_filter_fields(StrategyCfg, raw.get("strategy", {}))),
+        risk=RiskCfg(**_filter_fields(RiskCfg, raw.get("risk", {}))),
         mode=os.getenv("SOL_TRADE_MODE", "paper"),
         rpc_url=os.getenv("SOLANA_RPC_URL", "https://api.mainnet-beta.solana.com"),
         jupiter_api_key=os.getenv("JUPITER_API_KEY", ""),
@@ -131,7 +138,7 @@ def load_tokens(tokens_path: str | None = None) -> dict:
 def token_state_path(symbol: str, data_dir: Path) -> Path:
     """Επιστρέφει το state path για το symbol.
 
-    SOL     -> paper_state.json          (backward compat με υπάρχον αρχείο)
+    SOL      -> paper_state.json          (backward compat με υπάρχον αρχείο)
     BONK    -> paper_state_BONK.json
     WBTC    -> paper_state_WBTC.json
     ...
@@ -143,6 +150,3 @@ def token_state_path(symbol: str, data_dir: Path) -> Path:
 
 def token_history_path(symbol: str, data_dir: Path) -> Path:
     """Επιστρέφει το price_history path για το symbol."""
-    if symbol.upper() == "SOL":
-        return data_dir / "price_history.json"
-    return data_dir / f"price_history_{symbol.upper()}.json"
