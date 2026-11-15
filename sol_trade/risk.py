@@ -94,7 +94,10 @@ class RiskManager:
 
     def register_trade(self) -> None:
         self._rollover_day()
-        self._daily_count += 1
+        count = load_daily_trade_counter()
+count += 1
+save_daily_trade_counter(count)
+
 
     @property
     def daily_trades(self) -> int:
