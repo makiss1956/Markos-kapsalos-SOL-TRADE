@@ -38,6 +38,27 @@ class Position:
 class RiskDecision:
     allowed: bool
     reason: str
+    
+DAILY_COUNTER_FILE = Path("data/daily_counters.json")
+
+def load_daily_trade_counter():
+    today = datetime.now().strftime("%Y-%m-%d")
+    if DAILY_COUNTER_FILE.exists():
+        try:
+            with open(DAILY_COUNTER_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if data.get("date") == today:
+                    return data.get("count", 0)
+        except (json.JSONDecodeError, IOError):
+            pass
+    return 0
+
+def save_daily_trade_counter(count: int):
+    today = datetime.now().strftime("%Y-%m-%d")
+    DAILY_COUNTER_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(DAILY_COUNTER_FILE, "w", encoding="utf-8") as f:
+        json.dump({"date": today, "count": count}, f)
+
 
 
 class RiskManager:
