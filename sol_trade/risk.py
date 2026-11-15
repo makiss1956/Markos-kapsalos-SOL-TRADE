@@ -74,7 +74,8 @@ class RiskManager:
             return RiskDecision(False, "υπάρχει ήδη ανοιχτή θέση")
 
         self._rollover_day()
-        if self._daily_count >= self.cfg.max_daily_trades:
+        if load_daily_trade_counter() >= self.cfg.max_daily_trades:
+
             return RiskDecision(False, f"συμπληρώθηκε το ημερήσιο όριο ({self.cfg.max_daily_trades} trades)")
 
         if self.cfg.trade_amount_usd > self.cfg.max_position_usd:
