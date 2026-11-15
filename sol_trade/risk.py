@@ -3,20 +3,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date
-
-from .config import RiskCfg
+from datetime import date, datetime
 import json
-from datetime import datetime
 from pathlib import Path
 
+from .config import RiskCfg
 
 
 @dataclass
 class Position:
     entry_price: float
-    size_token: float          # ποσό token που κατέχουμε
-    size_usd: float            # αξία εισόδου σε USD
+    size_token: float           # ποσό token που κατέχουμε
+    size_usd: float             # αξία εισόδου σε USD
     opened_at: str
     highest_price: float = 0.0  # μηδενίζεται στο __post_init__ στην τιμή εισόδου
 
@@ -38,10 +36,12 @@ class Position:
 class RiskDecision:
     allowed: bool
     reason: str
-    
+
+
 DAILY_COUNTER_FILE = Path("data/daily_counters.json")
 
-def load_daily_trade_counter():
+
+def load_daily_trade_counter() -> int:
     today = datetime.now().strftime("%Y-%m-%d")
     if DAILY_COUNTER_FILE.exists():
         try:
@@ -53,12 +53,12 @@ def load_daily_trade_counter():
             pass
     return 0
 
-def save_daily_trade_counter(count: int):
+
+def save_daily_trade_counter(count: int) -> None:
     today = datetime.now().strftime("%Y-%m-%d")
     DAILY_COUNTER_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(DAILY_COUNTER_FILE, "w", encoding="utf-8") as f:
         json.dump({"date": today, "count": count}, f)
-
 
 
 class RiskManager:
@@ -75,7 +75,6 @@ class RiskManager:
 
         self._rollover_day()
         if load_daily_trade_counter() >= self.cfg.max_daily_trades:
-
             return RiskDecision(False, f"συμπληρώθηκε το ημερήσιο όριο ({self.cfg.max_daily_trades} trades)")
 
         if self.cfg.trade_amount_usd > self.cfg.max_position_usd:
@@ -96,14 +95,13 @@ class RiskManager:
     def register_trade(self) -> None:
         self._rollover_day()
         count = load_daily_trade_counter()
-count += 1
-save_daily_trade_counter(count)
-
+        count += 1
+        save_daily_trade_counter(count)
 
     @property
     def daily_trades(self) -> int:
         self._rollover_day()
-        return self._daily_count
+        return load_daily_trade_counter()
 
     # ---------------------------------------------------- ΕΞΟΔΟΣ
     def check_exit(self, position: Position, price: float) -> RiskDecision:
