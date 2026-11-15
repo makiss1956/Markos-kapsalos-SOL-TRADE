@@ -80,14 +80,20 @@ class LiveEngine:
             what=f"BUY {self.cfg.token.symbol}",
         )
         risk_manager.register_trade()
-        return {
-            "side": "BUY",
-            "signature": signature,
-            "entry_price": eff_price,
-            "size_token": size_token,
-            "size_usd": self.cfg.risk.trade_amount_usd,
-            "opened_at": utc_now_iso(),
-        }
+        # Λήψη πραγματικού αποτελέσματος από την συναλλαγή
+receipt = self._get_transaction_receipt(signature)
+out_amount = receipt.get("outAmount", 0)
+decimals = self._get_token_decimals(signal.token)
+actual_size = out_amount / (10 ** decimals)
+actual_entry_price = self.cfg.risk.trade_amount_usd / actual_size if actual_size > 0 else eff_price
+
+return {
+    "entry_price": actual_entry_price,
+    "size_token": actual_size,
+    "signature": signature,
+    "timestamp": datetime.utcnow().isoformat()
+}
+
 
     def sell(self, position: Position, reason: str, risk_manager: RiskManager) -> dict:
         """Πώληση όλης της θέσης: swap token -> USDC."""
