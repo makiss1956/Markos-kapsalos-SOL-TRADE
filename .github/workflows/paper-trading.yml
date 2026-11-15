@@ -8,7 +8,7 @@ name: Paper Trading (sol_trade multi-token)
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'   # κάθε ώρα UTC
+    - cron: "*/30 * * * *"   # κάθε ώρα UTC
 
 permissions:
   contents: write
