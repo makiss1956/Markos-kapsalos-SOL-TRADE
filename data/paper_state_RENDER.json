@@ -1,12 +1,20 @@
 {
-  "cash_usd": 950.0,
-  "position": {
-    "entry_price": 1.3831022855247337,
-    "size_token": 36.15061628000315,
-    "size_usd": 50.0,
-    "opened_at": "2026-11-28T04:39:39Z",
-    "highest_price": 1.3831022855247337
-  },
-  "trades": [],
+  "cash_usd": 998.282575975864,
+  "position": null,
+  "trades": [
+    {
+      "opened_at": "2026-11-28T04:39:39Z",
+      "closed_at": "2026-11-28T14:00:07Z",
+      "side": "SELL",
+      "reason": "STOP-LOSS -3.29%",
+      "entry_price": 1.383102,
+      "exit_price": 1.335595,
+      "size_token": 36.150616,
+      "size_usd": 50.0,
+      "proceeds_usd": 48.28,
+      "pnl_usd": -1.72,
+      "pnl_pct": -3.43
+    }
+  ],
   "started_at": "2026-11-13T16:50:23Z"
 }
